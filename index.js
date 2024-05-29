@@ -1,17 +1,17 @@
 const Web3 = require("web3");
 const redis = require('redis');
 const axios = require('axios');
+require("dotenv").config();
 
-// const {m721Address, m721ABI} = require('./config/config');
 
-const apiUrl = 'https://api.livecoinwatch.com/coins/single';
-const apiKey = '39657e64-05bd-4f51-ad4f-13ea96045bff';
+const apiUrl = process.env.API_URL
+const apiKey = process.env.API_KEY;
 
 const client = redis.createClient({
-    password: 'pubxorrOatPXj6oN0eXunJIVqGKqzggD',
+    password: process.env.REDIS_PASSWORD,
     socket: {
-        host: 'redis-12544.c54.ap-northeast-1-2.ec2.cloud.redislabs.com',
-        port: 12544,
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT,
     }
   });
   client.connect();
@@ -20,24 +20,10 @@ const client = redis.createClient({
     console.log("Connected to redis database!");
   });
 
-// const provider = new Web3.providers.HttpProvider('https://bsc-dataseed1.binance.org/')
-// const web3 = new Web3(provider);
-// const market721Contract = new web3.eth.Contract(m721ABI, m721Address);
 
 async function main() {
-    
-    // const scarToWei = web3.utils.toWei('1' , 'ether')
-    // console.log("scarToWei: ", scarToWei, "wei");
-    // let scarToBUSD = await market721Contract.methods.getBUSDfromSCAR(scarToWei).call()
-    //     .catch(error => {
-    //         console.error(error)
-    // })
-    // const busdToEther = web3.utils.fromWei(scarToBUSD , 'ether')
-    // console.log(`1 SCAR" = ${busdToEther} USD`);
-
     const rate = await fetchData();
-    const newRate = rate-rate*1/100
-    console.log("newRate: ", newRate);
+    console.log("Rate: ", rate);
 
     try {
         await client.set('scarPrice:scarPrice', JSON.stringify(rate))
@@ -62,12 +48,10 @@ const fetchData = async () => {
     const rate = data.rate
     return rate;
     //console.log("Rate: ", rate);
-    //console.log(response.data);
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 };
-
 
 main()
     .catch(error => {
@@ -75,4 +59,4 @@ main()
         process.exit(1);
     });
 
-setInterval(main, 30000);
+setInterval(main, 180000);
